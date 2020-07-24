@@ -1,3 +1,5 @@
+#[doc(hidden)]
+#[macro_export]
 macro_rules! block {
     ( $lifetime:lifetime: $($code:tt)* ) => (
         $lifetime: loop{

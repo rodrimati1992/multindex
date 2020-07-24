@@ -70,29 +70,42 @@ macro_rules! _index_impl {
         []
         [$index_arg_count:tt $($rem_count:tt)*]
         (
-            expected_uniqueness = $expected_uniqueness:expr,
+            expected_are_disjoint = $expected_are_disjoint:expr,
             on_out_of_bounds = $on_out_of_bounds:tt,
             auto_borrow_method = $auto_borrow_method:ident,
             slice_parts = $slice_parts:ident,
             index_method = $index_method:ident,
         )
     )=>({
-        const __IND_AAS:
-            &$crate::pmr::IndexArgumentsAndStats<
-                [$crate::pmr::IndexArgument; $index_arg_count]
-            >
-        = {
-            let iaas = $crate::new_IndexArgumentsAndStats!($($index,)*);
-            let props = $crate::pmr::IndexProperties::new(&iaas, $expected_uniqueness);
+        const __COMP_CONSTS: &$crate::pmr::ComputedConstants<
+            [$crate::pmr::IndexArgument; $index_arg_count]
+        > = {
+            let mut comp_consts;
+            $crate::block!{'constant:
+                comp_consts = $crate::new_IndexArgumentsAndStats!(@from_index_macro; $($index,)*);
+                if $crate::pmr::is_some(&comp_consts.err) { break 'constant; }
 
-            // This errors if the expected uniqueness of the indices differs
-            // from the actual uniqueness.
-            //
-            // Passing `AreAllUnique::No` to IndexProperties's constructor
-            // skips the uniqueness checks, always returning `AreAllUnique::No`.
-            props.uniqueness.assert_equals($expected_uniqueness);
+                let props = $crate::pmr::IndexProperties::new(
+                    &comp_consts.ind_args,
+                    &comp_consts.stats,
+                    $expected_are_disjoint,
+                );
 
-            &{iaas}
+                // This errors if the expected are_disjoint of the indices differs
+                // from the actual are_disjoint.
+                //
+                // Passing `AreAllDisjoint::No` to IndexProperties's constructor
+                // skips the are_disjoint checks, always returning `AreAllDisjoint::No`.
+                comp_consts.err = props.are_disjoint.check_is_expected(&$expected_are_disjoint);
+                if $crate::pmr::is_some(&comp_consts.err) { break 'constant; }
+            }
+            &{comp_consts}
+        };
+
+        const _: () = {
+            if let $crate::pmr::Some(m_error) = __COMP_CONSTS.err {
+                m_error.panic();
+            };
         };
 
         use $crate::utils::BorrowSelf as _;
@@ -106,11 +119,11 @@ macro_rules! _index_impl {
                 Indexer, IndexerParams, IndexArgument,
                 IndexPointer, $slice_parts,
             };
-            
-            if __IND_AAS.stats.max_bounded_end > slice.len() {
+
+            if __COMP_CONSTS.stats.max_bounded_end > slice.len() {
                 $crate::_on_out_of_bounds!(
                     $on_out_of_bounds,
-                    ind_stats = __IND_AAS.stats,
+                    ind_stats = __COMP_CONSTS.stats,
                     slice = slice
                 )
             } else {
@@ -120,7 +133,7 @@ macro_rules! _index_impl {
 
                 let ret = ($(
                     {
-                        const __IND_ARG: &IndexArgument = &__IND_AAS.ind_args[$count];
+                        const __IND_ARG: &IndexArgument = &__COMP_CONSTS.ind_args[$count];
 
                         type __IndexerAlias<T> = Indexer<
                             T,
@@ -153,7 +166,7 @@ macro_rules! multindex {
             slice = $slice;
             indices[$($index,)*];
             (
-                expected_uniqueness = $crate::pmr::AreAllUnique::No,
+                expected_are_disjoint = $crate::pmr::AreAllDisjoint::NO,
                 on_out_of_bounds = panic,
                 auto_borrow_method = _11748397628858797803_borrow_self,
                 slice_parts = SliceParts,
@@ -170,7 +183,7 @@ macro_rules! multindex_mut {
             slice = $slice;
             indices[$($index,)*];
             (
-                expected_uniqueness = $crate::pmr::AreAllUnique::Yes,
+                expected_are_disjoint = $crate::pmr::AreAllDisjoint::YES,
                 on_out_of_bounds = panic,
                 auto_borrow_method = _11748397628858797803_borrow_self_mut,
                 slice_parts = SlicePartsMut,
@@ -187,7 +200,7 @@ macro_rules! multiget {
             slice = $slice;
             indices[$($index,)*];
             (
-                expected_uniqueness = $crate::pmr::AreAllUnique::No,
+                expected_are_disjoint = $crate::pmr::AreAllDisjoint::NO,
                 on_out_of_bounds = option,
                 auto_borrow_method = _11748397628858797803_borrow_self,
                 slice_parts = SliceParts,
@@ -204,7 +217,7 @@ macro_rules! multiget_mut {
             slice = $slice;
             indices[$($index,)*];
             (
-                expected_uniqueness = $crate::pmr::AreAllUnique::Yes,
+                expected_are_disjoint = $crate::pmr::AreAllDisjoint::YES,
                 on_out_of_bounds = option,
                 auto_borrow_method = _11748397628858797803_borrow_self_mut,
                 slice_parts = SlicePartsMut,

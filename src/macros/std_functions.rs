@@ -17,12 +17,13 @@ macro_rules! option_expect {
     }};
 }
 
-#[allow(unused_macros)]
+#[doc(hidden)]
+#[macro_export]
 macro_rules! option_unwrap_or_else {
     ($opt:expr, $or_else:expr $(,)*) => {
         match $opt {
-            Some(x) => x,
-            None => $or_else,
+            $crate::pmr::Some(x) => x,
+            $crate::pmr::None => $or_else,
         }
     };
 }

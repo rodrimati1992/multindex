@@ -11,6 +11,8 @@ pub mod macros;
 #[doc(hidden)]
 pub mod index_argument;
 
+pub mod error;
+
 #[doc(hidden)]
 pub mod index_properties;
 
@@ -21,7 +23,7 @@ pub mod ptr_indexing;
 mod std_const_fns;
 
 #[doc(hidden)]
-pub mod uniqueness;
+pub mod are_disjoint;
 
 #[doc(hidden)]
 pub mod utils;
@@ -29,13 +31,16 @@ pub mod utils;
 #[doc(hidden)]
 pub mod pmr {
     pub use crate::{
+        are_disjoint::AreAllDisjoint,
         index_argument::{
             IK_Index, IK_Range, IK_RangeFrom, IndexArgument, IndexKind, IndexKindPicker,
             IntoPrenormIndex, PrenormIndex,
         },
-        index_properties::{IndexArgumentStats, IndexArgumentsAndStats, IndexProperties},
+        index_properties::{
+            ComputedConstants, IndexArgumentStats, IndexArgumentsAndStats, IndexProperties,
+        },
         ptr_indexing::{IndexPointer, Indexer, IndexerParams},
-        uniqueness::AreAllUnique,
+        std_const_fns::option_m::is_some,
         utils::{panic_on_oob_max_index, AssocType, BorrowSelf, SliceParts, SlicePartsMut},
     };
 
@@ -44,4 +49,3 @@ pub mod pmr {
 
 #[cfg(all(test, not(feature = "testing")))]
 compile_error! { "tests must be run with the \"testing\" feature" }
-

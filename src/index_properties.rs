@@ -1,4 +1,4 @@
-use crate::{index_argument::IndexArgument, uniqueness::AreAllUnique};
+use crate::{are_disjoint::AreAllDisjoint, error::Error, index_argument::IndexArgument};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,18 +29,29 @@ pub struct IndexArgumentsAndStats<IA: ?Sized> {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
+pub struct ComputedConstants<IA: ?Sized> {
+    pub err: Option<Error>,
+    pub stats: IndexArgumentStats,
+    /// An array of IndexArgument.
+    pub ind_args: IA,
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug)]
 pub struct IndexProperties {
-    pub uniqueness: AreAllUnique,
+    pub are_disjoint: AreAllDisjoint<Error>,
 }
 
 impl IndexProperties {
     pub const fn new(
-        IndexArgumentsAndStats { ind_args, stats }: &IndexArgumentsAndStats<[IndexArgument]>,
-        expected: AreAllUnique,
+        ind_args: &[IndexArgument],
+        stats: &IndexArgumentStats,
+        expected: AreAllDisjoint,
     ) -> Self {
         Self {
-            uniqueness: block! {'outer:
-                if let (AreAllUnique::Yes, false) = (expected, stats.are_sorted) {
+            are_disjoint: block! {'outer:
+                if let (AreAllDisjoint::Yes, false) = (expected, stats.are_sorted) {
                     for_range! { i in 0..ind_args.len() =>
                         for_range!{ j in 0..ind_args.len() =>
                             // Because the `intersects` method is symetric,we don't need to check
@@ -48,12 +59,15 @@ impl IndexProperties {
                             // and  ind_args[j].intersects(&ind_args[i])
                             if j >= i { break }
                             if ind_args[i].intersects(&ind_args[j]) {
-                                break 'outer AreAllUnique::No;
+                                break 'outer AreAllDisjoint::No(Error::OverlappingIndexArgs{
+                                    left: j as u16,
+                                    right: i as u16,
+                                });
                             }
                         }
                     }
                 }
-                expected
+                expected.with_dummy_error()
             },
         }
     }

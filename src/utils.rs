@@ -35,7 +35,7 @@ pub trait AssocType {
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Used to decompose a slice into its parts
-/// 
+///
 /// The `lifetime` field can be used to create references with the same lifetime.
 pub struct SliceParts<'a, T> {
     pub ptr: *const T,
@@ -57,7 +57,7 @@ impl<'a, T> SliceParts<'a, T> {
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Used to decompose a slice into its parts
-/// 
+///
 /// The `lifetime` field can be used to create references with the same lifetime.
 pub struct SlicePartsMut<'a, T> {
     pub ptr: *mut T,

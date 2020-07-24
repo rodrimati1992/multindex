@@ -1,7 +1,11 @@
 use crate::{
+    error::Error,
     index_properties::IndexArgumentStats,
     std_const_fns::{slice_m, usize_m},
 };
+
+#[cfg(feature = "testing")]
+use crate::index_properties::IndexArgumentsAndStats;
 
 use core::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive};
 
@@ -22,16 +26,6 @@ impl IntoPrenormIndex<Range<usize>> {
         PrenormIndex::Range {
             start: Some(self.0.start),
             end: Some(self.0.end),
-        }
-    }
-}
-
-impl IntoPrenormIndex<RangeInclusive<usize>> {
-    #[inline]
-    pub const fn call(self) -> PrenormIndex {
-        PrenormIndex::Range {
-            start: Some(*self.0.start()),
-            end: Some(*self.0.end() + 1),
         }
     }
 }
@@ -66,12 +60,33 @@ impl IntoPrenormIndex<RangeTo<usize>> {
     }
 }
 
+impl IntoPrenormIndex<RangeInclusive<usize>> {
+    #[inline]
+    pub const fn call(self) -> PrenormIndex {
+        let start = Some(*self.0.start());
+        let (end, overflowed) = (*self.0.end()).overflowing_add(1);
+        if overflowed {
+            PrenormIndex::InclusiveToMax { start }
+        } else {
+            PrenormIndex::Range {
+                start,
+                end: Some(end),
+            }
+        }
+    }
+}
+
 impl IntoPrenormIndex<RangeToInclusive<usize>> {
     #[inline]
     pub const fn call(self) -> PrenormIndex {
-        PrenormIndex::Range {
-            start: None,
-            end: Some(self.0.end + 1),
+        let (end, overflowed) = self.0.end.overflowing_add(1);
+        if overflowed {
+            PrenormIndex::InclusiveToMax { start: None }
+        } else {
+            PrenormIndex::Range {
+                start: None,
+                end: Some(end),
+            }
         }
     }
 }
@@ -85,6 +100,10 @@ pub enum PrenormIndex {
         start: Option<usize>,
         end: Option<usize>,
     },
+    /// A poison value for `n ..= usize::MAX` ranges.
+    InclusiveToMax {
+        start: Option<usize>,
+    },
 }
 
 impl PrenormIndex {
@@ -92,12 +111,14 @@ impl PrenormIndex {
         match *self {
             Self::Index(i) => Some(i),
             Self::Range { start, .. } => start,
+            Self::InclusiveToMax { start } => start,
         }
     }
     const fn end(&self) -> Option<usize> {
         match *self {
             Self::Index(i) => Some(i + 1),
             Self::Range { end, .. } => end,
+            Self::InclusiveToMax { .. } => None,
         }
     }
 }
@@ -120,23 +141,26 @@ impl IndexArgument {
 
     #[cfg(feature = "testing")]
     pub fn many_from_prenorm(
-        prenorm: &[PrenormIndex]
-    ) -> crate::index_properties::IndexArgumentsAndStats<Vec<Self>> {
+        prenorm: &[PrenormIndex],
+    ) -> Result<IndexArgumentsAndStats<Vec<Self>>, Error> {
         let mut ind_args = vec![Self::EMPTY; prenorm.len()];
 
-        new_IndexArgumentsAndStats! {
+        Ok(new_IndexArgumentsAndStats! {
             @initialize
             prenorm = prenorm,
             ind_args = ind_args,
-        }
+            error_handling(|e| return Err(e) ),
+        })
     }
 
     pub const fn from_prenorm(
         prenorm: &[PrenormIndex],
-        i: usize,
+        current_index: u16,
         mut stats: IndexArgumentStats,
-    ) -> (Self, IndexArgumentStats) {
+    ) -> Result<(Self, IndexArgumentStats), Error> {
         let candidate_max_end: usize;
+
+        let i = current_index as usize;
 
         let this = match prenorm[i] {
             PrenormIndex::Index(start) => {
@@ -152,9 +176,9 @@ impl IndexArgument {
                 let start = if let Some(start) = start {
                     start
                 } else if let Some(prev) = slice_m::get(&prenorm, i.wrapping_sub(1)) {
-                    option_expect!(
+                    option_unwrap_or_else!(
                         prev.end(),
-                        "Expected previous PrenormIndex to have a bounded end"
+                        return Err(Error::PrevEndIsUnbounded { current_index })
                     )
                 } else
                 /*This is the first PrenormIndex in the slice*/
@@ -172,17 +196,18 @@ impl IndexArgument {
                     index_kind = IndexKind::Range;
                     saturated_len = len;
                 } else if let Some(next) = slice_m::get(&prenorm, i + 1) {
-                    let next_start = option_expect!(
+                    let next_start = option_unwrap_or_else!(
                         next.start(),
-                        "Expected next PrenormIndex to have a bounded end"
+                        return Err(Error::NextStartIsUnbounded { current_index })
                     );
 
                     candidate_max_end = next_start;
 
                     let (len, overflowed) = next_start.overflowing_sub(start);
 
-                    ["Expected next PrenormIndex to have a larger or equal start index"]
-                        [overflowed as usize];
+                    if overflowed {
+                        return Err(Error::NextStartIsLessThanCurrent { current_index });
+                    }
 
                     index_kind = IndexKind::Range;
                     saturated_len = len;
@@ -202,6 +227,9 @@ impl IndexArgument {
                     saturated_len,
                 }
             }
+            PrenormIndex::InclusiveToMax { .. } => {
+                return Err(Error::InclusiveUptoUsizeMax { current_index })
+            }
         };
 
         let prev_max_bounded_end = mem_replace!(
@@ -210,7 +238,7 @@ impl IndexArgument {
         );
         stats.are_sorted = stats.are_sorted && prev_max_bounded_end <= this.start;
 
-        (this, stats)
+        Ok((this, stats))
     }
 }
 
@@ -246,7 +274,7 @@ impl IndexArgument {
     ///
     /// If `self` has an unbounded end this function returns `usize::MAX`
     #[inline]
-    const fn saturated_end(&self) -> usize {
+    pub const fn saturated_end(&self) -> usize {
         self.start + self.saturated_len
     }
 }
