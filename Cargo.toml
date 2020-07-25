@@ -12,3 +12,6 @@ description = "Index slice with multiple const indices and ranges."
 testing = []
 
 [dependencies]
+
+[dev-dependencies]
+fastrand = "1.3"
