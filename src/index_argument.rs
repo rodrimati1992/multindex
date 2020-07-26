@@ -181,7 +181,7 @@ impl IndexArgument {
                         return Err(Error::PrevEndIsUnbounded { current_index })
                     )
                 } else
-                /*This is the first PrenormIndex in the slice*/
+                /*This is the first PrenormIndex in the slice, and it's unbounded*/
                 {
                     0
                 };
@@ -212,7 +212,7 @@ impl IndexArgument {
                     index_kind = IndexKind::Range;
                     saturated_len = len;
                 } else
-                /*This is the last PrenormIndex in the slice*/
+                /*This is the last PrenormIndex in the slice, and it's unbounded*/
                 {
                     // When the IndexArgument has an unbounded end,
                     // only the start of it needs to be bounds checked.

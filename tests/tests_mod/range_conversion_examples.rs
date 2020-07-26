@@ -14,12 +14,16 @@ fn assert_variables(this: &IndexArgument) -> (usize, usize, usize, IndexKind) {
     )
 }
 
+#[cfg(not(miri))]
 // Checks that the max_bounded_end property is the same even if the elements are shifted around.
 fn check_max_bounded_end_shuffled(prenorm: &mut [PrenormIndex], max_bounded_end: usize) {
     fastrand::shuffle(prenorm);
     let stats = IndexArgument::many_from_prenorm(prenorm).unwrap().stats;
     assert_eq!(stats.max_bounded_end, max_bounded_end);
 }
+
+#[cfg(miri)]
+fn check_max_bounded_end_shuffled(_prenorm: &mut [PrenormIndex], _max_bounded_end: usize) {}
 
 macro_rules! indarg_asserts {
     (
@@ -323,5 +327,115 @@ fn range_inclusive_index_argument() {
         for _ in 0..10 {
             check_max_bounded_end_shuffled(&mut prenorm, 41);
         }
+    }
+}
+
+#[test]
+fn range_full_index_argument() {
+    {
+        let prenorm = prenorm_indices_from!(..);
+
+        assert_eq!(
+            prenorm,
+            [PrenormIndex::Range {
+                start: None,
+                end: None,
+            },]
+        );
+
+        indarg_asserts!(
+            prenorm = prenorm,
+            max_bounded_end = 0,
+            are_sorted = true,
+            are_disjoint = AreAllDisjoint::Yes,
+            expected_start_end_len = [(0, usize::MAX, 0, IndexKind::RangeFrom),],
+        );
+    }
+    {
+        let prenorm = prenorm_indices_from!(10..20, ..);
+
+        assert_eq!(
+            prenorm,
+            [
+                PrenormIndex::Range {
+                    start: Some(10),
+                    end: Some(20),
+                },
+                PrenormIndex::Range {
+                    start: None,
+                    end: None,
+                },
+            ]
+        );
+
+        indarg_asserts!(
+            prenorm = prenorm,
+            max_bounded_end = 20,
+            are_sorted = true,
+            are_disjoint = AreAllDisjoint::Yes,
+            expected_start_end_len = [
+                (10, 20, 10, IndexKind::Range),
+                (20, usize::MAX, 0, IndexKind::RangeFrom),
+            ],
+        );
+    }
+    {
+        let prenorm = prenorm_indices_from!(.., 20..30, 31);
+
+        assert_eq!(
+            prenorm,
+            [
+                PrenormIndex::Range {
+                    start: None,
+                    end: None,
+                },
+                PrenormIndex::Range {
+                    start: Some(20),
+                    end: Some(30),
+                },
+                PrenormIndex::Index(31),
+            ]
+        );
+
+        indarg_asserts!(
+            prenorm = prenorm,
+            max_bounded_end = 32,
+            are_sorted = true,
+            are_disjoint = AreAllDisjoint::Yes,
+            expected_start_end_len = [
+                (0, 20, 20, IndexKind::Range),
+                (20, 30, 10, IndexKind::Range),
+                (31, 32, 1, IndexKind::Index),
+            ],
+        );
+    }
+    {
+        let prenorm = prenorm_indices_from!(10, .., 20, 21);
+
+        assert_eq!(
+            prenorm,
+            [
+                PrenormIndex::Index(10),
+                PrenormIndex::Range {
+                    start: None,
+                    end: None,
+                },
+                PrenormIndex::Index(20),
+                PrenormIndex::Index(21),
+            ]
+        );
+
+        indarg_asserts!(
+            prenorm = prenorm,
+            max_bounded_end = 22,
+            are_sorted = true,
+            are_disjoint = AreAllDisjoint::Yes,
+            expected_start_end_len = [
+                (10, 11, 1, IndexKind::Index),
+                (11, 20, 9, IndexKind::Range),
+                (20, 21, 1, IndexKind::Index),
+                (21, 22, 1, IndexKind::Index),
+            ],
+        );
     }
 }

@@ -20,13 +20,20 @@ pub mod index_properties;
 pub mod ptr_indexing;
 
 #[doc(hidden)]
-mod std_const_fns;
+pub mod std_const_fns;
 
 #[doc(hidden)]
 pub mod are_disjoint;
 
 #[doc(hidden)]
 pub mod utils;
+
+#[doc(hidden)]
+#[cfg(feature = "testing")]
+pub mod doc_based_tests;
+
+#[doc(hidden)]
+pub use error::Error;
 
 #[doc(hidden)]
 pub mod pmr {
