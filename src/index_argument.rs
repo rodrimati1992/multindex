@@ -294,8 +294,8 @@ impl IndexArgument {
 pub enum IndexKind {
     // Making this a 0 means that RangeArgument::EMPTY is an all-zeroes bitpattern.
     Range = 0,
-    Index = 1,
-    RangeFrom = 2,
+    Index,
+    RangeFrom,
 }
 
 pub enum IK_Index {}
@@ -304,9 +304,9 @@ pub enum IK_RangeFrom {}
 
 make_type_picker! {
     for[] struct IndexKindPicker[];
-    types = [
-        IK_Range,
-        IK_Index,
-        IK_RangeFrom,
+    values_to_types = [
+        IndexKind::Range => IK_Range,
+        IndexKind::Index => IK_Index,
+        IndexKind::RangeFrom => IK_RangeFrom,
     ];
 }

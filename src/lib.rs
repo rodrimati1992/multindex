@@ -43,6 +43,7 @@ pub use error::Error;
 pub mod pmr {
     pub use crate::{
         are_disjoint::AreAllDisjoint,
+        error::{ErrorPicker, ErrorTuple, NoErrorsFound},
         index_argument::{
             IK_Index, IK_Range, IK_RangeFrom, IndexArgument, IndexKind, IndexKindPicker,
             IntoPrenormIndex, PrenormIndex,

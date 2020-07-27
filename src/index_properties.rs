@@ -1,4 +1,8 @@
-use crate::{are_disjoint::AreAllDisjoint, error::Error, index_argument::IndexArgument};
+use crate::{
+    are_disjoint::AreAllDisjoint,
+    error::{Error, ErrorTuple},
+    index_argument::IndexArgument,
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +35,7 @@ pub struct IndexArgumentsAndStats<IA: ?Sized> {
 #[derive(Debug)]
 pub struct ComputedConstants<IA: ?Sized> {
     pub err: Result<(), Error>,
+    pub err_tuple: ErrorTuple,
     pub stats: IndexArgumentStats,
     /// An array of IndexArgument.
     pub ind_args: IA,

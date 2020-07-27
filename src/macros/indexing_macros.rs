@@ -99,14 +99,12 @@ macro_rules! _index_impl {
                 comp_consts.err = props.are_disjoint.check_is_expected(&$expected_are_disjoint);
                 if $crate::pmr::is_err(&comp_consts.err) { break 'constant; }
             }
+            comp_consts.err_tuple = $crate::error::result_to_tuple(comp_consts.err);
             &{comp_consts}
         };
 
-        const _: () = {
-            if let $crate::pmr::Err(m_error) = __COMP_CONSTS.err {
-                m_error.panic();
-            };
-        };
+        const _: $crate::pmr::NoErrorsFound =
+            <$crate::error_tuple_to_error_type!(__COMP_CONSTS.err_tuple)>::NEW;
 
         use $crate::utils::BorrowSelf as _;
         // The `*borrow_**` method here ensures that `$slice`

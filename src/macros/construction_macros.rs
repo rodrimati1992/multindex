@@ -40,6 +40,7 @@ macro_rules! new_IndexArgumentsAndStats{
 
         $crate::pmr::ComputedConstants{
             err: ret_err,
+            err_tuple: $crate::pmr::ErrorTuple::OK,
             stats: iaas.stats,
             ind_args: iaas.ind_args,
         }
