@@ -1,3 +1,4 @@
+#[doc(hidden)]
 #[macro_export]
 macro_rules! _in_bounds_behavior {
     (option, $expr:expr) => {
@@ -8,6 +9,7 @@ macro_rules! _in_bounds_behavior {
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! _on_out_of_bounds {
     (panic, ind_stats = $ind_stats:expr, slice = $slice:ident) => {
@@ -18,6 +20,7 @@ macro_rules! _on_out_of_bounds {
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! _index_impl {
     (
