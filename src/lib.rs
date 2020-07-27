@@ -30,6 +30,10 @@ pub mod utils;
 
 #[doc(hidden)]
 #[cfg(feature = "testing")]
+pub mod test_utils;
+
+#[doc(hidden)]
+#[cfg(feature = "testing")]
 pub mod doc_based_tests;
 
 #[doc(hidden)]
@@ -47,11 +51,12 @@ pub mod pmr {
             ComputedConstants, IndexArgumentStats, IndexArgumentsAndStats, IndexProperties,
         },
         ptr_indexing::{IndexPointer, Indexer, IndexerParams},
-        std_const_fns::option_m::is_some,
+        std_const_fns::result_m::is_err,
         utils::{panic_on_oob_max_index, AssocType, BorrowSelf, SliceParts, SlicePartsMut},
     };
 
     pub use core::option::Option::{self, None, Some};
+    pub use core::result::Result::Err;
 }
 
 #[cfg(all(test, not(feature = "testing")))]

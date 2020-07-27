@@ -61,3 +61,12 @@ pub mod option_m {
         matches!(this, None)
     }
 }
+
+pub mod result_m {
+    pub const fn is_ok<T, E>(this: &Result<T, E>) -> bool {
+        matches!(this, Ok(_))
+    }
+    pub const fn is_err<T, E>(this: &Result<T, E>) -> bool {
+        matches!(this, Err(_))
+    }
+}

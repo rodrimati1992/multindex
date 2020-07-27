@@ -270,6 +270,15 @@ impl IndexArgument {
         self.start
     }
 
+    #[inline]
+    pub const fn end(&self) -> Option<usize> {
+        if let IndexKind::RangeFrom = self.index_kind {
+            None
+        } else {
+            Some(self.saturated_end())
+        }
+    }
+
     /// Gets the exclusive end index of this IndexArgument.
     ///
     /// If `self` has an unbounded end this function returns `usize::MAX`

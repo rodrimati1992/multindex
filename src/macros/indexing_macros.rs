@@ -83,7 +83,7 @@ macro_rules! _index_impl {
             let mut comp_consts;
             $crate::block!{'constant:
                 comp_consts = $crate::new_IndexArgumentsAndStats!(@from_index_macro; $($index,)*);
-                if $crate::pmr::is_some(&comp_consts.err) { break 'constant; }
+                if $crate::pmr::is_err(&comp_consts.err) { break 'constant; }
 
                 let props = $crate::pmr::IndexProperties::new(
                     &comp_consts.ind_args,
@@ -97,13 +97,13 @@ macro_rules! _index_impl {
                 // Passing `AreAllDisjoint::No` to IndexProperties's constructor
                 // skips the are_disjoint checks, always returning `AreAllDisjoint::No`.
                 comp_consts.err = props.are_disjoint.check_is_expected(&$expected_are_disjoint);
-                if $crate::pmr::is_some(&comp_consts.err) { break 'constant; }
+                if $crate::pmr::is_err(&comp_consts.err) { break 'constant; }
             }
             &{comp_consts}
         };
 
         const _: () = {
-            if let $crate::pmr::Some(m_error) = __COMP_CONSTS.err {
+            if let $crate::pmr::Err(m_error) = __COMP_CONSTS.err {
                 m_error.panic();
             };
         };

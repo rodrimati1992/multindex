@@ -26,14 +26,14 @@ macro_rules! new_IndexArgumentsAndStats{
             &$crate::prenorm_indices_from!($($index,)*);
 
         let mut ind_args = [$crate::pmr::IndexArgument::EMPTY; __PRENORM.len()];
-        let mut ret_err = None;
+        let mut ret_err = Ok(());
 
         let iaas = $crate::new_IndexArgumentsAndStats!{
             @initialize
             prenorm = __PRENORM,
             ind_args = ind_args,
             error_handling(|e|{
-                ret_err = $crate::pmr::Some(e);
+                ret_err = $crate::pmr::Err(e);
                 break;
             }),
         };

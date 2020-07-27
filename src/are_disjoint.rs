@@ -26,11 +26,11 @@ impl AreAllDisjoint<()> {
     }
 }
 impl AreAllDisjoint<Error> {
-    pub const fn check_is_expected<T>(self, expected: &AreAllDisjoint<T>) -> Option<Error> {
+    pub const fn check_is_expected<T>(self, expected: &AreAllDisjoint<T>) -> Result<(), Error> {
         match (self, expected) {
-            (AreAllDisjoint::Yes, _) => None,
-            (_, AreAllDisjoint::No(_)) => None,
-            (AreAllDisjoint::No(x), AreAllDisjoint::Yes) => Some(x),
+            (AreAllDisjoint::Yes, _) => Ok(()),
+            (_, AreAllDisjoint::No(_)) => Ok(()),
+            (AreAllDisjoint::No(x), AreAllDisjoint::Yes) => Err(x),
         }
     }
 }

@@ -30,7 +30,7 @@ pub struct IndexArgumentsAndStats<IA: ?Sized> {
 
 #[derive(Debug)]
 pub struct ComputedConstants<IA: ?Sized> {
-    pub err: Option<Error>,
+    pub err: Result<(), Error>,
     pub stats: IndexArgumentStats,
     /// An array of IndexArgument.
     pub ind_args: IA,
