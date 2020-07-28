@@ -6,6 +6,11 @@ os:
   - windows
 
 matrix:
+  excluce: 
+    - rust: stable
+    - rust: 1.45
+    - rust: 1.45.0
+    - rust: 1.45.1
   include:
     # - rust: 1.46.0 # Enable this when it exists
     - rust: beta
