@@ -6,8 +6,10 @@ os:
   - windows
 
 matrix:
+  exclude:
+    - rust: stable # remove this when stable >= 1.46.0
   include:
-    - rust: 1.46.0
+    # - rust: 1.46.0 # Enable this when it exists
     - rust: beta
     - rust: nightly  
       script:
