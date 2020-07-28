@@ -3,7 +3,7 @@ Documents what the indexing macros share in common.
 
 # Limitations
 
-The  macros from this crate only accept compile-time indices/ranges not 
+The  macros from this crate only accept compile-time indices/ranges not
 derived from generic parameters.
 
 The non-generic limitation might be lifted in newer versions,
@@ -27,7 +27,7 @@ as long as the range.
 
 - Unbounded ranges:
 Returns a slice if the range is unbounded at the end of the argument list.
-otherwise returns an reference to an array.
+Otherwise returns an reference to an array.
 <br>Eg: `..2`, `..=2`, `2..`, `..`.
 
 For an example of using every type of argument [look here](#every-arg-type-example)
@@ -55,56 +55,57 @@ Once const-generics are stable (and powerful enough to express it generically),
 a new release could be made with macros that check that the arguments are in bounds of arrays,
 at compile-time.
 
-# The error types 
+# The error types
 
-These are the errors this macro encodes as types
+These are the errors that this macro encodes as types
 
 ### `OverlappingIndexArguments__ArgumentsAre<[(); LeftArgument ], [(); RightArgument ]>`:
 
-Whenever an argument overlaps with another one, 
+When an argument overlaps with another one,
 if this was allowed to compile it would allow aliasing `&mut` references.
 
 `LeftArgument` is which argument overlaps with another one, starting at 0.
 
 `RightArgument` is which argument overlaps with `LeftArgument`, starting at 0.
 
-Examples: 
+Examples:
 
 In `multindex!(slice; 10, 20, 10)`, `LeftArgument` is `0` `RightArgument` is `2`.<br>
 In `multindex!(slice; 0, 4..10, 20, 6)`, `LeftArgument` is `1` `RightArgument` is `3`.<br>
 
 ### `NextStartIsUnbounded__CurrentArgumentIs<[(); WhichArgument ]>`:
 
-Whenever a range argument unbounded at the end is followed by a 
-range argument unbounded at the start.
+When a range argument with an unbounded end is followed by a
+range argument with an unbounded start.
 
 `WhichArgument` is which argument triggers the error, starting at 0.
 
-Examples: 
+Examples:
 
 In `multindex!(slice; 3.., ..5)`, `WhichArgument` is `0`<br>
 In `multindex!(slice; 1, 3, 5.., ..)`, `WhichArgument` is `2`.
 
 ### `NextStartIsLessThanCurrent__CurrentArgumentIs<[(); WhichArgument ]>`:
 
-Whenever a range argument unbounded at the end is followed by an
+When a range argument with an unbounded end is followed by an
 argument that compares less to it.
 
 `WhichArgument` is which argument triggers the error, starting at 0.
 
-Examples: 
+Examples:
 
-In `multindex!(slice; 3.., 0)`, `WhichArgument` is `0`<br>
-In `multindex!(slice; 1, 3, 5.., 2)`, `WhichArgument` is `2`.
+In `multindex!(slice; 13.., 4)`, `WhichArgument` is `0`<br>
+In `multindex!(slice; 1, 3, 10.., 8)`, `WhichArgument` is `2`.
 
 ### `InclusiveUptoUsizeMax__CurrentArgumentis<[(); WhichArgument ]>`:
 
-Whenever an inclusive range argument ends at `usize::MAX`.
+When an inclusive range argument ends at `usize::MAX`.
+
 This is an error to simplify the implementation of this crate.
 
 `WhichArgument` is which argument triggers the error, starting at 0.
 
-Examples: 
+Examples:
 
 In `multindex!(slice; ..=usize::MAX)`, `WhichArgument` is `0`<br>
 In `multindex!(slice; 1, 3, 5..=usize::MAX)`, `WhichArgument` is `2`.
@@ -154,7 +155,7 @@ use multindex::multindex_mut;
     // Trailing `..` ranges return slice references with the rest of the slice
     let trailing: (&mut i32, &mut [i32],) = multindex_mut!(arr; 5, ..);
     assert_eq!(trailing, (&mut 34, &mut [55, 89, 144][..]));
-    
+
     // Initial/middle `..` ranges return references to arrays.
     let middle: (&mut i32, &mut [i32; 3], &mut i32) = multindex_mut!(arr; 0, .., 4);
     assert_eq!(middle, (&mut 3, &mut [5, 8, 13], &mut 21));

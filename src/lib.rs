@@ -2,34 +2,36 @@
 
 Macros for indexing slices/arrays with multiple compile-time indices/ranges.
 
-These macros return tuples of (mutable) references to elements / arrays / slices,
+These indexing macros check that the indices/ranges don't overlap,
+erroring at compile-time if they do,
+then return tuples of references to elements / arrays / slices,
 based on each passed-in argument.
 
-# Shared Macro docs 
+# Shared Macro docs
 
-[This is documentation for what all indexing macros have in common (a lot).
-](./docs/index.html)
+Because the indexing macros are all very similar in how they work,
+they have [shared documentation] with all of what they share in common.
 
 # Examples
 
 ### Parsing integers
 
-This example demonstrates how you can fallibly get the first 4 bytes of a 
+This example demonstrates how you can fallibly get the first 4 bytes of a
 slice as an array, and the remainder as a slice.
-
-Note: The macros cannot take constants derived from generic parameters,
-so this function can't be generic over the parsed integer.
 
 ```rust
 use multindex::multiget;
 
-let mut slice = &[0,0,1,10][..];
+let mut slice = &[0, 0, 1, 10, 20][..];
 
-assert_eq!(parse_u32(&mut slice), Some(266));
-assert_eq!(slice, &[]);
+assert_eq!(grab_u32(&mut slice), Some(266));
+assert_eq!(slice, &[20]);
+
+assert_eq!(grab_u32(&mut slice), None);
+assert_eq!(slice, &[20]);
 
 
-fn parse_u32(slice: &mut &[u8]) -> Option<u32> {
+fn grab_u32(slice: &mut &[u8]) -> Option<u32> {
     let (u32_bytes, rem) = multiget!(*slice; ..4, ..)?;
     *slice = rem;
     Some(u32::from_be_bytes(*u32_bytes))
@@ -47,7 +49,7 @@ use multindex::multindex;
 const ROW_SIZE: usize = 5;
 
 let array: [u16; ROW_SIZE * 4] = [
-    1, 2, 3, 5, 8, 
+    1, 2, 3, 5, 8,
     13, 21, 34, 55, 89,
     144, 233, 377, 610, 987,
     1597, 2584, 4181, 6765, 10946,
@@ -79,7 +81,10 @@ to check that the indices/ranges passed to the macros don't overlap
 This crate is `#[no-std]`.
 If newer versions add features that require std,
 they'll be conditional on a "std" feature being enabled
-(it won't be enabled by default). 
+(it won't be enabled by default).
+
+
+[shared documentation]: ./indexing_macro_docs/index.html
 
 */
 
@@ -89,7 +94,7 @@ they'll be conditional on a "std" feature being enabled
 #[doc(hidden)]
 pub extern crate core;
 
-pub mod docs;
+pub mod indexing_macro_docs;
 
 #[doc(hidden)]
 #[macro_use]

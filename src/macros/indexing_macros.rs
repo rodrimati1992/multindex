@@ -160,6 +160,35 @@ macro_rules! _index_impl {
 
 }
 
+/// For immutable indexing of slices with multiple indices/ranges.
+///
+/// # Shared docs
+///
+/// The indexing macros share a lot in common,
+/// because of that [you can look here](./indexing_macro_docs/index.html)
+/// for additional documentation.
+///
+/// # Panics
+///
+/// This macro panics at runtime if the indices/ranges are
+/// out of bounds for the passed slice.
+///
+/// # Example
+///
+/// ```rust
+/// use multindex::multindex;
+///
+/// let arr = [3u8, 5, 8, 13, 21, 34];
+///
+/// assert_eq!(multindex!(arr; 0, 2, 4), (&3, &8, &21));
+///
+/// // The `2..=4` here returns a `&[u8; 3]`, since it's a bounded range.
+/// assert_eq!(multindex!(arr; 0, 2..=4), (&3, &[8, 13, 21]));
+///
+/// // The `..` here returns a `&[u8]`, since it's a trailing unbounded range
+/// assert_eq!(multindex!(arr; ..2, ..), (&[3, 5], &[8, 13, 21, 34][..]));
+/// ```
+///
 #[macro_export]
 macro_rules! multindex {
     ( $slice:expr; $($index:expr),* $(,)? ) => (
@@ -177,6 +206,35 @@ macro_rules! multindex {
     );
 }
 
+/// For mutable indexing of slices with multiple indices/ranges.
+///
+/// # Shared docs
+///
+/// The indexing macros share a lot in common,
+/// because of that [you can look here](./indexing_macro_docs/index.html)
+/// for additional documentation.
+///
+/// # Panics
+///
+/// This macro panics at runtime if the indices/ranges are
+/// out of bounds for the passed slice.
+///
+/// # Example
+///
+/// ```rust
+/// use multindex::multindex_mut;
+///
+/// let mut arr = [3u8, 5, 8, 13, 21, 34];
+///
+/// assert_eq!(multindex_mut!(arr; 0, 2, 4), (&mut 3, &mut 8, &mut 21));
+///
+/// // The `2..=4` here returns a `&mut [u8; 3]`, since it's a bounded range.
+/// assert_eq!(multindex_mut!(arr; 0, 2..=4), (&mut 3, &mut [8, 13, 21]));
+///
+/// // The `..` here returns a `&mut [u8]`, since it's a trailing unbounded range
+/// assert_eq!(multindex_mut!(arr; ..2, ..), (&mut [3, 5], &mut [8, 13, 21, 34][..]));
+/// ```
+///
 #[macro_export]
 macro_rules! multindex_mut {
     ( $slice:expr; $($index:expr),* $(,)? ) => (
@@ -194,6 +252,38 @@ macro_rules! multindex_mut {
     );
 }
 
+/// For immutable indexing of slices with multiple indices/ranges.
+///
+/// This macro returns `None` if the indices/ranges are
+/// out of bounds for the passed slice,
+/// returns `Some` if they are in bounds.
+///
+/// # Shared docs
+///
+/// The indexing macros share a lot in common,
+/// because of that [you can look here](./indexing_macro_docs/index.html)
+/// for additional documentation.
+///
+/// # Example
+///
+/// ```rust
+/// use multindex::multiget;
+///
+/// let arr = [3u8, 5, 8, 13, 21, 34];
+///
+/// assert_eq!(multiget!(arr; 0, 2, 4), Some((&3, &8, &21)));
+///
+/// // The `2..=4` here returns a `&[u8; 3]`, since it's a bounded range.
+/// assert_eq!(multiget!(arr; 0, 2..=4), Some((&3, &[8, 13, 21])));
+///
+/// // The `..` here returns a `&[u8]`, since it's a trailing unbounded range
+/// assert_eq!(multiget!(arr; ..2, ..), Some((&[3, 5], &[8, 13, 21, 34][..])));
+///
+/// assert_eq!(multiget!(arr; 0, 1, 10), None);
+///
+/// assert_eq!(multiget!(arr; 0..10), None);
+/// ```
+///
 #[macro_export]
 macro_rules! multiget {
     ( $slice:expr; $($index:expr),* $(,)? ) => (
@@ -211,6 +301,38 @@ macro_rules! multiget {
     );
 }
 
+/// For mutable indexing of slices with multiple indices/ranges.
+///
+/// This macro returns `None` if the indices/ranges are
+/// out of bounds for the passed slice,
+/// returns `Some` if they are in bounds.
+///
+/// # Shared docs
+///
+/// The indexing macros share a lot in common,
+/// because of that [you can look here](./indexing_macro_docs/index.html)
+/// for additional documentation.
+///
+/// # Example
+///
+/// ```rust
+/// use multindex::multiget_mut;
+///
+/// let mut arr = [3u8, 5, 8, 13, 21, 34];
+///
+/// assert_eq!(multiget_mut!(arr; 0, 2, 4), Some((&mut 3, &mut 8, &mut 21)));
+///
+/// // The `2..=4` here returns a `&mut [u8; 3]`, since it's a bounded range.
+/// assert_eq!(multiget_mut!(arr; 0, 2..=4), Some((&mut 3, &mut [8, 13, 21])));
+///
+/// // The `..` here returns a `&mut [u8]`, since it's a trailing unbounded range
+/// assert_eq!(multiget_mut!(arr; ..2, ..), Some((&mut [3, 5], &mut [8, 13, 21, 34][..])));
+///
+/// assert_eq!(multiget_mut!(arr; 0, 1, 10), None);
+///
+/// assert_eq!(multiget_mut!(arr; 0..10), None);
+/// ```
+///
 #[macro_export]
 macro_rules! multiget_mut {
     ( $slice:expr; $($index:expr),* $(,)? ) => (
