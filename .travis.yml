@@ -1,0 +1,36 @@
+language: rust
+
+os: 
+  - linux
+  - osx
+  - windows
+
+rust: 
+  - beta
+  - nightly
+
+script:
+  - cd "${TRAVIS_BUILD_DIR}/"
+  - cargo test --features testing
+
+matrix:
+  include:
+    - rust: nightly  
+      script:
+        # Uncomment this if you add dependencies
+        # - cargo update -Z minimal-versions
+        # - cd "${TRAVIS_BUILD_DIR}/"
+        # - cargo build --tests --features testing
+
+        - cd "${TRAVIS_BUILD_DIR}/"
+
+        - MIRI_NIGHTLY=nightly-$(curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/miri)
+        - echo "Installing latest nightly with Miri"
+        - echo "$MIRI_NIGHTLY"
+        - rustup set profile minimal
+        - rustup default "$MIRI_NIGHTLY"
+        - rustup override set "$MIRI_NIGHTLY"
+        - rustup component add miri
+        - cargo miri setup
+        - cargo miri test --features testing
+
