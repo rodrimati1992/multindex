@@ -3,9 +3,22 @@ name = "multindex"
 version = "0.1.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
-description = "Index slice with multiple const indices and ranges."
+license = "Zlib"
+description = "Index slices with multiple const indices/ranges."
+documentation = "https://docs.rs/multindex/"
+readme="../README.md"
+keywords = ["no-std", "rust-patterns", "indexing"]
+categories = ["no-std", "rust-patterns"]
+repository = "https://github.com/rodrimati1992/multindex/"
+include = [
+    "Cargo.toml", 
+    "src/**/*.rs", 
+    "../README.md",
+    "../LICENSE-ZLIB.md", 
+]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[badges]
+travis-ci = { repository =  "rodrimati1992/multindex/" }
 
 [features]
 
