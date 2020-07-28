@@ -6,15 +6,15 @@ edition = "2018"
 license = "Zlib"
 description = "Index slices with multiple const indices/ranges."
 documentation = "https://docs.rs/multindex/"
-readme="../README.md"
+readme="./README.md"
 keywords = ["no-std", "rust-patterns", "indexing"]
 categories = ["no-std", "rust-patterns"]
 repository = "https://github.com/rodrimati1992/multindex/"
 include = [
     "Cargo.toml", 
     "src/**/*.rs", 
-    "../README.md",
-    "../LICENSE-ZLIB.md", 
+    "./README.md",
+    "./LICENSE-ZLIB.md", 
 ]
 
 [badges]
