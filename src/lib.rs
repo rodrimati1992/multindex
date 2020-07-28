@@ -2,15 +2,9 @@
 
 Macros for indexing slices/arrays with multiple compile-time indices/ranges.
 
-These indexing macros check that the indices/ranges don't overlap,
-erroring at compile-time if they do,
-then return tuples of references to elements / arrays / slices,
-based on each passed-in argument.
-
-# Shared Macro docs
-
-Because the indexing macros are all very similar in how they work,
-they have [shared documentation] with all of what they share in common.
+These indexing macros check at compile-time that the indices/ranges don't overlap,
+returning tuples of references to elements / arrays / slices,
+depending on each argument.
 
 # Examples
 
@@ -22,7 +16,7 @@ This example demonstrates how you can borrow multiple indices and ranges into a 
 ```rust
 use multindex::multindex_mut;
 
-let mut field = (100..200).collect::<Vec<u32>>();
+let mut fields = (100..200).collect::<Vec<u32>>();
 
 const FIELD_A: usize = 32;
 const FIELD_B: usize = 40;
@@ -31,7 +25,7 @@ const FIELD_E: usize = 62;
 
 // `&mut` in here copies the value through the mutable reference
 let (field_a, &mut field_b, &mut field_c_to_e) =
-    multindex_mut!(field; FIELD_A, FIELD_B, FIELD_C..=FIELD_E);
+    multindex_mut!(fields; FIELD_A, FIELD_B, FIELD_C..=FIELD_E);
 
 assert_eq!(*field_a, 132);
 assert_eq!(field_b, 140);
@@ -72,7 +66,7 @@ fn grab_u32(slice: &mut &[u8]) -> Option<u32> {
 
 ### Splitting an array
 
-This example demonstrates how you can split an array into reference to smaller arrays.
+This example demonstrates how you can split an array into references to smaller arrays.
 
 ```rust
 use multindex::multindex;
@@ -98,6 +92,11 @@ assert_eq!(row2, &[144, 233, 377, 610, 987]);
 assert_eq!(row3, &[1597, 2584, 4181, 6765, 10946]);
 
 ```
+
+# Shared Macro docs
+
+Because the indexing macros are all very similar in how they work,
+they have [shared documentation] with all of what they share in common.
 
 # Minimum Supported Rust Version
 
