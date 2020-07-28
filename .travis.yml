@@ -36,3 +36,4 @@ matrix:
 script:
   - cd "${TRAVIS_BUILD_DIR}/"
   - cargo test --features testing
+
