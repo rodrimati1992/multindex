@@ -5,15 +5,16 @@ os:
   - osx
   - windows
 
+rust: 
+  - beta
+  - nightly
+
+script:
+  - cd "${TRAVIS_BUILD_DIR}/"
+  - cargo test --features testing
+
 matrix:
-  excluce: 
-    - rust: stable
-    - rust: 1.45
-    - rust: 1.45.0
-    - rust: 1.45.1
   include:
-    # - rust: 1.46.0 # Enable this when it exists
-    - rust: beta
     - rust: nightly  
       script:
         # Uncomment this if you add dependencies
@@ -31,14 +32,5 @@ matrix:
         - rustup override set "$MIRI_NIGHTLY"
         - rustup component add miri
         - cargo miri setup
-
-        - cargo test --features testing
-
-        - cargo clean 
-
         - cargo miri test --features testing
-
-  script:
-    - cd "${TRAVIS_BUILD_DIR}/"
-    - cargo test --features testing
 
