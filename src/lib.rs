@@ -14,6 +14,36 @@ they have [shared documentation] with all of what they share in common.
 
 # Examples
 
+### Array as fields
+
+This example demonstrates how you can borrow multiple indices and ranges into an array.
+
+```rust
+use multindex::multindex_mut;
+
+let mut field = (100..200).collect::<Vec<u32>>();
+
+const FIELD_A: usize = 32;
+const FIELD_B: usize = 40;
+const FIELD_C: usize = 60;
+const FIELD_E: usize = 62;
+
+// The type annotation is for the reader, the compiler can infer the types.
+let (field_a, field_b, field_c_to_e): (&mut u32, &mut u32, &mut [u32; 3]) =
+    multindex_mut!(field; FIELD_A, FIELD_B, FIELD_C..=FIELD_E);
+
+assert_eq!(field_a, &mut 132);
+assert_eq!(field_b, &mut 140);
+assert_eq!(field_c_to_e, &mut [160, 161, 162]);
+
+*field_a = *field_b;
+assert_eq!(*field_a, 140);
+
+*field_a += field_c_to_e.iter().sum::<u32>();
+assert_eq!(*field_a, 623);
+
+```
+
 ### Parsing integers
 
 This example demonstrates how you can fallibly get the first 4 bytes of a
