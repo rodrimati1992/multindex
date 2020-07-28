@@ -14,9 +14,10 @@ they have [shared documentation] with all of what they share in common.
 
 # Examples
 
-### Array as fields
+### Slice as fields
 
-This example demonstrates how you can borrow multiple indices and ranges into an array.
+This example demonstrates how you can borrow multiple indices and ranges into a `Vec`
+(also works for slices, and arrays).
 
 ```rust
 use multindex::multindex_mut;
@@ -28,15 +29,15 @@ const FIELD_B: usize = 40;
 const FIELD_C: usize = 60;
 const FIELD_E: usize = 62;
 
-// The type annotation is for the reader, the compiler can infer the types.
-let (field_a, field_b, field_c_to_e): (&mut u32, &mut u32, &mut [u32; 3]) =
+// `&mut` in here copies the value through the mutable reference
+let (field_a, &mut field_b, &mut field_c_to_e) =
     multindex_mut!(field; FIELD_A, FIELD_B, FIELD_C..=FIELD_E);
 
-assert_eq!(field_a, &mut 132);
-assert_eq!(field_b, &mut 140);
-assert_eq!(field_c_to_e, &mut [160, 161, 162]);
+assert_eq!(*field_a, 132);
+assert_eq!(field_b, 140);
+assert_eq!(field_c_to_e, [160, 161, 162]);
 
-*field_a = *field_b;
+*field_a = field_b;
 assert_eq!(*field_a, 140);
 
 *field_a += field_c_to_e.iter().sum::<u32>();
