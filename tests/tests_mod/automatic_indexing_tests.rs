@@ -1,3 +1,5 @@
+use super::range_conversion_examples::assert_indexargument_invariants;
+
 use multindex::test_utils::bitset::BitSet;
 
 use multindex::pmr::{
@@ -6,9 +8,20 @@ use multindex::pmr::{
 
 use std::convert::TryInto;
 
+const MAX_SLICE_LEN: usize = 64;
+
+// The length of covered integers up to usize max.
+const TO_USIZE_MAX: usize = 32;
+
+fn rand_index(state: &fastrand::Rng) -> usize {
+    state
+        .usize(..MAX_SLICE_LEN * 2 + TO_USIZE_MAX)
+        .wrapping_sub(TO_USIZE_MAX)
+}
+
 fn rand_optusize(state: &fastrand::Rng) -> Option<usize> {
     if state.bool() {
-        Some(state.usize(..64))
+        Some(rand_index(state))
     } else {
         None
     }
@@ -16,7 +29,7 @@ fn rand_optusize(state: &fastrand::Rng) -> Option<usize> {
 
 fn generate_prenormindex(state: &fastrand::Rng) -> PrenormIndex {
     match state.usize(1..=100) {
-        1..=25 => PrenormIndex::Index(state.usize(..64)),
+        1..=25 => PrenormIndex::Index(rand_index(state)),
         25..=90 => PrenormIndex::Range {
             start: rand_optusize(state),
             end: rand_optusize(state),
@@ -61,9 +74,17 @@ fn range_nonoverlapping() {
                 continue 'inner;
             }
 
+            assert_eq!(MAX_SLICE_LEN, set.capacity());
+
+            fn tou8(n: usize) -> u8 {
+                std::cmp::min(n, MAX_SLICE_LEN).try_into().unwrap()
+            }
+
             for ia in &ind_args {
-                let start: u8 = ia.start().try_into().unwrap();
-                let end: u8 = ia.end().unwrap_or(set.capacity()).try_into().unwrap();
+                let start: u8 = tou8(ia.start());
+                let end: u8 = tou8(ia.end().unwrap_or(set.capacity()));
+
+                assert_indexargument_invariants(ia);
 
                 if let Some(already_set) = (start..end).find(|x| set.is_set(*x)) {
                     panic!(

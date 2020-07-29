@@ -15,6 +15,10 @@ pub enum Error {
     InclusiveUptoUsizeMax {
         current_index: u16,
     },
+    /// When an index argument was is `usize::MAX`.
+    UsizeMaxIndex {
+        current_index: u16,
+    },
     OverlappingIndexArgs {
         left: u16,
         right: u16,
@@ -61,6 +65,9 @@ impl Error {
             }
             Error::InclusiveUptoUsizeMax { current_index } => {
                 ErrorTuple::new(ErrorKind::InclusiveUptoUsizeMax, current_index as _, 0)
+            }
+            Error::UsizeMaxIndex { current_index } => {
+                ErrorTuple::new(ErrorKind::UsizeMaxIndex, current_index as _, 0)
             }
             Error::OverlappingIndexArgs { left, right } => {
                 ErrorTuple::new(ErrorKind::OverlappingIndexArgs, left as _, right as _)
@@ -153,5 +160,6 @@ declare_error_tys!(
     NextStartIsUnbounded       => NextStartIsUnbounded__CurrentArgumentIs<A>,
     NextStartIsLessThanCurrent => NextStartIsLessThanCurrent__CurrentArgumentIs<A>,
     InclusiveUptoUsizeMax      => InclusiveUptoUsizeMax__CurrentArgumentis<A>,
+    UsizeMaxIndex              => UsizeMaxIndex__CurrentArgumentis<A>,
     OverlappingIndexArgs       => OverlappingIndexArguments__ArgumentsAre<A, B>,
 );

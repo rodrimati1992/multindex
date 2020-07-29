@@ -110,6 +110,19 @@ Examples:
 In `multindex!(slice; ..=usize::MAX)`, `WhichArgument` is `0`<br>
 In `multindex!(slice; 1, 3, 5..=usize::MAX)`, `WhichArgument` is `2`.
 
+### `UsizeMaxIndex__CurrentArgumentis<[(); WhichArgument ]>`:
+
+When an integer argument is `usize::MAX`.
+
+This is an error to simplify the implementation of this crate.
+
+`WhichArgument` is which argument triggers the error, starting at 0.
+
+Examples:
+
+In `multindex!(slice; usize::MAX)`, `WhichArgument` is `0`<br>
+In `multindex!(slice; 1, 3, usize::MAX)`, `WhichArgument` is `2`.
+
 
 # Examples
 

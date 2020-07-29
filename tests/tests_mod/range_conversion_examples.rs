@@ -5,13 +5,63 @@ use multindex::pmr::{
 
 use multindex::prenorm_indices_from;
 
-fn assert_variables(this: &IndexArgument) -> (usize, usize, usize, IndexKind) {
-    (
-        this.start(),
-        this.saturated_end(),
-        this.len_else_zero(),
-        this.index_kind(),
-    )
+#[derive(Debug, PartialEq, Clone)]
+pub struct AssertVars {
+    pub start: usize,
+    pub sat_end: usize,
+    pub len_or0: usize,
+    pub index_kind: IndexKind,
+}
+
+impl AssertVars {
+    fn from_tuple((start, sat_end, len_or0, index_kind): (usize, usize, usize, IndexKind)) -> Self {
+        Self {
+            start,
+            sat_end,
+            len_or0,
+            index_kind,
+        }
+    }
+
+    fn from_indargs(this: &IndexArgument) -> Self {
+        Self {
+            start: this.start(),
+            sat_end: this.saturated_end(),
+            len_or0: this.len_else_zero(),
+            index_kind: this.index_kind(),
+        }
+    }
+}
+
+pub fn assert_indexargument_invariants(indarg: &IndexArgument) {
+    let vars = AssertVars::from_indargs(indarg);
+
+    let index_and_range_assertions = || {
+        let end = indarg.end().unwrap();
+        assert_eq!(indarg.saturated_end(), end, "{:?}", vars);
+        assert_eq!(
+            indarg.len_else_zero(),
+            indarg.saturated_end() - indarg.start(),
+            "{:?}",
+            vars
+        );
+    };
+
+    match indarg.index_kind() {
+        IndexKind::Index => {
+            assert_eq!(indarg.len_else_zero(), 1, "{:?}", vars);
+            index_and_range_assertions();
+        }
+        IndexKind::Range => {
+            index_and_range_assertions();
+        }
+        IndexKind::RangeFrom => {
+            assert_eq!(indarg.end(), None, "{:?}", vars);
+            assert_eq!(indarg.saturated_end(), usize::MAX, "{:?}", vars);
+            assert_eq!(indarg.len_else_zero(), 0, "{:?}", vars);
+            assert_eq!(indarg.index_kind(), IndexKind::RangeFrom, "{:?}", vars);
+        }
+    }
 }
 
 #[cfg(not(miri))]
@@ -47,9 +97,12 @@ macro_rules! indarg_asserts {
             ind_props.are_disjoint,
         );
 
-        let expected = [$($expected,)*];
-        for (indarg, (start, end, len, kind)) in ind_args.iter().zip(expected.iter().cloned()) {
-            assert_eq!( assert_variables(indarg), (start, end, len, kind) );
+        let expected = [$( AssertVars::from_tuple($expected) ,)*];
+        for (indarg, exp) in ind_args.iter().zip(expected.iter().cloned()) {
+            let found = AssertVars::from_indargs(indarg);
+            assert_indexargument_invariants(indarg);
+
+            assert_eq!(found, exp);
         }
     )
 }

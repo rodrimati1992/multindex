@@ -164,6 +164,10 @@ impl IndexArgument {
 
         let this = match prenorm[i] {
             PrenormIndex::Index(start) => {
+                if start == usize::MAX {
+                    return Err(Error::UsizeMaxIndex { current_index });
+                }
+
                 candidate_max_end = start + 1;
 
                 Self {
