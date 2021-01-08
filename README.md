@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/rodrimati1992/multindex.svg?branch=master)](https://travis-ci.org/rodrimati1992/multindex)
+[![Rust](https://github.com/rodrimati1992/multindex/workflows/Rust/badge.svg)](https://github.com/rodrimati1992/multindex/actions)
 [![crates-io](https://img.shields.io/crates/v/multindex.svg)](https://crates.io/crates/multindex)
 [![api-docs](https://docs.rs/multindex/badge.svg)](https://docs.rs/multindex/*)
 
